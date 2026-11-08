@@ -1,4 +1,14 @@
-import { isListing } from './lib.js';
+import { isListing, addressFromPageText } from './lib.js';
+
+// Find "Street 12a" (+ postcode / town) in free text such as the Funda app's share message.
+function addressInText(t) {
+  if (!t) return null;
+  const withPc = addressFromPageText(t);
+  if (withPc) return `${withPc.street} ${withPc.postcode}`;
+  const tail = t.split(/:\s*/).at(-1); // drop "Bekijk deze woning op Funda:" style lead-ins
+  const m = tail.match(/([A-Za-zÀ-ÿ'.\-]+(?: [A-Za-zÀ-ÿ'.\-]+){0,4} \d{1,5}(?:[ -]?[A-Za-z0-9]{1,4})?)(?:\s*,\s*([A-Za-zÀ-ÿ'.\- ]{2,40}))?/);
+  return m ? [m[1], m[2]].filter(Boolean).join(' ').trim() : null;
+}
 
 const H = window.HZ;
 const app = document.getElementById('app');
@@ -35,10 +45,19 @@ if (H.link && isListing(H.link)) {
   await import('./popup.js');
 } else if (H.typed) {
   await import('./popup.js');
+} else if (H.link && addressInText(H.rest)) {
+  // Funda app short link (/detail/<id>): use the address from the share text instead.
+  H.typed = addressInText(H.rest);
+  H.link = '';
+  input.value = H.typed;
+  await import('./popup.js');
 } else if (H.link) {
-  app.innerHTML = `<p class="err">This link is not a single listing on Funda, Pararius or Jaap:</p>
-    <p class="small muted" style="word-break:break-all">${esc(H.link)}</p>
-    <p>Open the listing in the browser and copy its address bar, or type the address (e.g. <i>Stinzenlaan Zuid 210 Breukelen</i>).</p>`;
+  app.innerHTML = `<p class="err">This link has no address in it${/funda\.nl\/detail\/\d+/.test(H.link) ? ' (the Funda app shares only a listing number)' : ''}.</p>
+    <p><b>Type the street, house number and town</b> in the box above and press Check.</p>
+    <p class="small muted" style="word-break:break-all">Shared: ${esc(H.rest || '(no text)')} · ${esc(H.link)}</p>`;
+  input.value = '';
+  input.placeholder = 'e.g. Stinzenlaan Zuid 210 Breukelen';
+  input.focus();
 } else {
   app.innerHTML = `
     <h2>How to use</h2>

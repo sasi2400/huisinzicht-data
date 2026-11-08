@@ -8,7 +8,9 @@
   const typed = link ? '' : (P.get('url') || P.get('q') || P.get('text') || '').trim();
   const num = (s) => (s ? Number(String(s).replace(/[^\d]/g, '')) || null : null);
   const priceText = P.get('price') || (shared.match(/€\s?(\d{1,3}(?:[.\s]\d{3})+)/) || [])[1];
-  window.HZ = { link, typed, price: num(priceText), area: num(P.get('m2')), type: P.get('type') || '' };
+  // Shared words around the link (the Funda app's short /detail/<id> links carry no address in the URL).
+  const rest = link ? ['title', 'text'].map((k) => (P.get(k) || '').replace(link, ' ')).join(' ').replace(/\s+/g, ' ').trim() : '';
+  window.HZ = { link, typed, rest, price: num(priceText), area: num(P.get('m2')), type: P.get('type') || '' };
 
   const area = (load, save) => ({
     async get(keys) {
@@ -33,8 +35,8 @@
     tabs: {
       query: async () => [{
         id: 1,
-        url: link || location.href,
-        address: link ? null : (typed ? { street: typed, city: '' } : null),
+        url: window.HZ.link || location.href,
+        address: window.HZ.link ? null : (window.HZ.typed ? { street: window.HZ.typed, city: '' } : null),
       }],
     },
     // There is no listing page to read on a phone: hand back what the user typed or the share text held.
