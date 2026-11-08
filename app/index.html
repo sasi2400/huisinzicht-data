@@ -1,0 +1,41 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>HuisInZicht</title>
+<meta name="description" content="Overbid estimate, WOZ value, liveability, risks and neighbourhood data for Dutch home listings.">
+<meta name="theme-color" content="#3c5941">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="HuisInZicht">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-180.png">
+<link rel="stylesheet" href="popup.css">
+<link rel="stylesheet" href="web.css">
+<script src="shim.js"></script>
+</head>
+<body>
+  <form id="find" class="find" autocomplete="off">
+    <div class="brand"><img src="icon-192.png" alt="" width="24" height="24"> HuisInZicht</div>
+    <div class="row">
+      <input name="url" type="text" inputmode="url" placeholder="Funda / Pararius / Jaap link, or an address" aria-label="Listing link or address">
+      <button type="button" id="paste">Paste</button>
+    </div>
+    <div class="row">
+      <input name="price" type="text" inputmode="numeric" placeholder="Asking price €" aria-label="Asking price">
+      <select name="type" aria-label="House type">
+        <option value="">Type: auto</option>
+        <option value="appartement">Apartment</option>
+        <option value="tussen">Terraced</option>
+        <option value="hoek">End-of-terrace</option>
+        <option value="twee1kap">Semi-detached</option>
+        <option value="vrijstaand">Detached</option>
+      </select>
+      <button type="submit" class="go">Check</button>
+    </div>
+  </form>
+  <main id="app"></main>
+  <script type="module" src="web.js"></script>
+</body>
+</html>
