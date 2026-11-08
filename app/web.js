@@ -138,7 +138,28 @@ function addStar() {
   paint();
   h1.before(btn);
 }
-window.addEventListener('hz-result', () => setTimeout(addStar));
-new MutationObserver(addStar).observe(app, { childList: true });
+// No asking price (the phone can't read the listing): ask for it right where the overbid would appear.
+function addPriceAsk() {
+  const tabs = app.querySelector('header nav.tabs');
+  if (!tabs || app.querySelector('.highlight') || document.getElementById('ask-price')) return;
+  if (/huur|for-rent|te-huur/i.test(H.link)) return; // rentals have no overbid
+  const box = document.createElement('form');
+  box.id = 'ask-price'; box.className = 'highlight askprice';
+  box.innerHTML = `<span class="hl-label">Expected overbid</span>
+    <span class="small">Enter the asking price to see it:</span>
+    <span class="row"><input name="p" type="text" inputmode="numeric" placeholder="€ asking price" aria-label="Asking price">
+    <button type="submit">Show</button></span>`;
+  box.onsubmit = (e) => {
+    e.preventDefault();
+    const v = box.elements.p.value.replace(/[^\d]/g, '');
+    if (!v) return box.elements.p.focus();
+    form.elements.price.value = v;
+    form.requestSubmit();
+  };
+  tabs.before(box);
+}
+const decorate = () => { addStar(); addPriceAsk(); };
+window.addEventListener('hz-result', () => setTimeout(decorate));
+new MutationObserver(decorate).observe(app, { childList: true });
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});

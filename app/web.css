@@ -36,3 +36,10 @@ code.copy { display: block; margin: 4px 0; padding: 6px 8px; border-radius: 6px;
 details summary { margin: 16px 0 4px; color: var(--accent); cursor: pointer; }
 #star { float: right; margin: 0 0 4px 8px; font-size: 14px; padding: 5px 10px; border-radius: 8px; }
 #star.on { background: #fbe9d6; border-color: #e7c6a3; color: #4a2f14; }
+.askprice { display: grid; grid-template-columns: minmax(0, 1fr); grid-template-rows: none; gap: 6px; cursor: default; }
+.askprice > * { grid-column: 1 !important; grid-row: auto !important; }
+.askprice .row { display: flex; gap: 6px; }
+.askprice input { font: inherit; font-size: 16px; flex: 1; min-width: 0; padding: 8px 10px; border-radius: 8px;
+  border: 1px solid #e7c6a3; background: #fffaf4; color: #4a2f14; }
+.askprice button { font-size: 15px; font-weight: 600; padding: 8px 14px; border-radius: 8px; background: #c07a3a; border: none; color: #fff; }
+@media (prefers-color-scheme: dark) { .askprice input { background: #2d241a; color: #f6e6d3; border-color: #6b5236; } }
