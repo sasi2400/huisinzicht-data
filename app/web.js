@@ -73,6 +73,7 @@ if (H.link && isListing(H.link)) {
     <ol class="steps">
       <li>Chrome menu <b>⋮ → Add to Home screen → Install</b>.</li>
       <li>Then in the Funda app or website: <b>Share → HuisInZicht</b>. It opens straight on the listing.</li>
+      <li class="small muted">If the Funda app's share holds no address, share from funda.nl in Chrome instead: those links include the street.</li>
     </ol>`}
     <p class="small muted">All data comes straight from public sources (Leefbaarometer, Kadaster WOZ, BAG, CBS, RIVM,
       Klimaateffectatlas, NVM). Nothing is stored or sent anywhere else.</p>`;
