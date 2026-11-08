@@ -71,3 +71,6 @@ tr.hl td { background: var(--card); font-weight: 600; }
 .option { display: block; margin-top: 10px; padding-top: 8px; border-top: 1px solid var(--line); font-size: 12px; cursor: pointer; }
 .option input { vertical-align: -2px; margin: 0 4px 0 0; }
 .option .small { display: block; margin-left: 20px; }
+button.grant { font-size: 14px; padding: 8px 14px; background: var(--accent); color: var(--bg); border: none; }
+/* Firefox for Android shows the popup full-screen. */
+@media (pointer: coarse) and (max-width: 500px) { body { width: auto; max-height: none; } }

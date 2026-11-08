@@ -482,9 +482,33 @@ async function wireOption() {
   box.onchange = () => chrome.storage.sync.set({ lbmMap: box.checked });
 }
 
+// Firefox for Android can open the popup as its own tab: then use the web page viewed last.
+async function currentTab() {
+  let [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (!tab?.url || tab.url.startsWith(location.origin + '/') && /^(moz|chrome)-extension:/.test(tab.url)) {
+    const tabs = (await chrome.tabs.query({})).filter((t) => t.url && /^https?:/.test(t.url));
+    tabs.sort((a, b) => (b.lastAccessed || 0) - (a.lastAccessed || 0));
+    tab = tabs[0] || tab;
+  }
+  return tab;
+}
+
+// Firefox may not grant the data sites at install; ask once with a button (a user tap is required).
+async function needsAccess() {
+  if (!chrome.permissions?.contains || !chrome.runtime?.getManifest) return false;
+  const origins = chrome.runtime.getManifest().host_permissions || [];
+  if (await chrome.permissions.contains({ origins })) return false;
+  app.innerHTML = `<h1>HuisInZicht</h1>
+    <p>HuisInZicht needs access to Funda and the public data sites (Leefbaarometer, Kadaster, CBS, RIVM …) to work.</p>
+    <button id="grant" class="grant">Allow access</button>`;
+  document.getElementById('grant').onclick = async () => { if (await chrome.permissions.request({ origins })) load(); };
+  return true;
+}
+
 async function load(force = false) {
   app.innerHTML = '<p class="muted">Loading data…</p>';
-  const [tab] = await chrome.tabs.query({ active: true, currentWindow: true });
+  if (await needsAccess()) return;
+  const tab = await currentTab();
   if (!tab?.address && (!tab?.url || !isListing(tab.url))) {
     app.innerHTML = `<h1>HuisInZicht</h1>
       <p class="muted">Open a single listing on Funda, Pararius or Jaap and click this icon again.</p>
