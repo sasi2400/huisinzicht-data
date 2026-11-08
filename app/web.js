@@ -72,10 +72,22 @@ if (H.link && isListing(H.link)) {
     <p>Paste a Funda, Pararius or Jaap link, or type an address, then press <b>Check</b>.
       The asking price is optional; with it you also get the overbid estimate.</p>
     ${isIOS ? `
-    <h2>On iPhone</h2>
+    <h2>On iPhone: one-time setup (2 minutes)</h2>
+    <p>This puts <b>HuisInZicht</b> in the Share menu, so a house opens with two taps.</p>
     <ol class="steps">
-      <li>Safari: tap <b>Share → Add to Home Screen</b> to keep HuisInZicht as an app.</li>
-      <li>In Funda: <b>Share → Copy</b>, open HuisInZicht, tap <b>Paste</b>.</li>
+      <li>Open the <b>Shortcuts</b> app → <b>+</b> (top right). Name it <b>HuisInZicht</b>.</li>
+      <li>Search actions for <b>URL Encode</b> and add it. It should say <i>URL Encode Shortcut Input</i>
+        (if it says "Text", tap that word and pick <i>Shortcut Input</i>).</li>
+      <li>Add <b>Text</b> and type exactly:<br><code class="copy">${location.origin + location.pathname}?text=</code>
+        then, right after the <code>=</code>, tap <b>URL Encoded Text</b> above the keyboard.</li>
+      <li>Add <b>Open URLs</b> (it uses the Text automatically).</li>
+      <li>Tap the <b>ⓘ</b> at the bottom → turn on <b>Show in Share Sheet</b>. Tap Done.</li>
+    </ol>
+    <h2>Every time</h2>
+    <ol class="steps">
+      <li>Look at houses on <b>funda.nl in Safari</b> (Safari → Share → Add to Home Screen gives a Funda icon).</li>
+      <li>On a house: <b>Share → HuisInZicht</b>. Done.</li>
+      <li class="small muted">From the Funda app it works too, but that app shares only a number: tap <b>Open this house in Safari</b>, then Share → HuisInZicht again.</li>
     </ol>` : `
     <h2>On Android</h2>
     <ol class="steps">
