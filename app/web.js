@@ -52,12 +52,20 @@ if (H.link && isListing(H.link)) {
   input.value = H.typed;
   await import('./popup.js');
 } else if (H.link) {
-  app.innerHTML = `<p class="err">This link has no address in it${/funda\.nl\/detail\/\d+/.test(H.link) ? ' (the Funda app shares only a listing number)' : ''}.</p>
-    <p><b>Type the street, house number and town</b> in the box above and press Check.</p>
+  const fundaId = (H.link.match(/funda\.nl\/(?:\w+\/)?detail\/(\d{6,})/) || [])[1];
+  // Open the listing in Chrome rather than the Funda app; Chrome's address bar has the full link with the street.
+  const chromeUrl = fundaId && !isIOS
+    ? `intent://www.funda.nl/detail/${fundaId}/#Intent;scheme=https;package=com.android.chrome;S.browser_fallback_url=${encodeURIComponent(`https://www.funda.nl/detail/${fundaId}/`)};end`
+    : fundaId ? `https://www.funda.nl/detail/${fundaId}/` : '';
+  app.innerHTML = `<p class="err">This link has no address in it${fundaId ? ' (the Funda app shares only a listing number)' : ''}.</p>
+    ${chromeUrl ? `<p><a class="bigbtn" href="${esc(chromeUrl)}">Open this house in ${isIOS ? 'Safari' : 'Chrome'}</a></p>
+    <p>Then tap <b>${isIOS ? 'Share → Copy, come back here and tap Paste' : '⋮ → Share → HuisInZicht'}</b>.</p>
+    <p class="small muted">Or type the street, house number and town in the box above.</p>`
+    : '<p><b>Type the street, house number and town</b> in the box above and press Check.</p>'}
     <p class="small muted" style="word-break:break-all">Shared: ${esc(H.rest || '(no text)')} · ${esc(H.link)}</p>`;
   input.value = '';
   input.placeholder = 'e.g. Stinzenlaan Zuid 210 Breukelen';
-  input.focus();
+  if (!chromeUrl) input.focus();
 } else {
   app.innerHTML = `
     <h2>How to use</h2>
