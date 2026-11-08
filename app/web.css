@@ -11,7 +11,7 @@ button { font-size: 13px; padding: 6px 10px; }
 td.num .note { max-width: 60vw; }
 
 .find { display: grid; grid-template-columns: minmax(0, 1fr); gap: 8px; padding: max(12px, env(safe-area-inset-top)) 16px 4px; }
-.brand { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; }
+.brand { color: var(--fg); text-decoration: none; display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 16px; }
 .brand img { border-radius: 6px; }
 .find .row { display: flex; gap: 6px; }
 /* 16px stops iOS from zooming into the field. */
@@ -26,3 +26,13 @@ td.num .note { max-width: 60vw; }
   color: var(--bg); font-weight: 600; text-decoration: none; font-size: 16px; }
 code.copy { display: block; margin: 4px 0; padding: 6px 8px; border-radius: 6px; background: var(--card);
   border: 1px solid var(--line); font-size: 13px; word-break: break-all; user-select: all; -webkit-user-select: all; }
+.recent { list-style: none; margin: 0; padding: 0; }
+.recent a { display: flex; gap: 10px; align-items: center; padding: 8px 0; border-bottom: 1px solid var(--line);
+  color: var(--fg); text-decoration: none; }
+.rbadge { flex: none; width: 34px; height: 34px; border-radius: 8px; display: grid; place-items: center; font-weight: 700; }
+.rtext { display: flex; flex-direction: column; min-width: 0; }
+.rtext b { overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.linkbtn { float: right; border: none; padding: 0; color: var(--accent); font-size: 12px; text-transform: none; letter-spacing: 0; }
+details summary { margin: 16px 0 4px; color: var(--accent); cursor: pointer; }
+#star { float: right; margin: 0 0 4px 8px; font-size: 14px; padding: 5px 10px; border-radius: 8px; }
+#star.on { background: #fbe9d6; border-color: #e7c6a3; color: #4a2f14; }

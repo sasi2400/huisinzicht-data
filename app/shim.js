@@ -28,8 +28,37 @@
     (k, v) => { try { localStorage.setItem(prefix + k, JSON.stringify(v)); } catch { /* private mode */ } },
   );
 
+  // Recently viewed houses (this phone only). popup.js stores every finished lookup in storage.session,
+  // so that write is where we note it.
+  const RECENT = 'hz.recent';
+  window.HZ.recent = () => { try { return JSON.parse(localStorage.getItem(RECENT)) || []; } catch { return []; } };
+  const listIO = (key) => [
+    () => { try { return JSON.parse(localStorage.getItem(key)) || []; } catch { return []; } },
+    (list) => { try { localStorage.setItem(key, JSON.stringify(list)); } catch { /* private mode */ } },
+  ];
+  [window.HZ.saved, window.HZ.setSaved] = listIO('hz.saved');   // bookmarks: kept until removed
+  window.HZ.saveRecent = (list) => { try { localStorage.setItem(RECENT, JSON.stringify(list.slice(0, 20))); } catch { /* private mode */ } };
+  function remember(res) {
+    const H = window.HZ;
+    const q = H.link || H.typed;
+    if (!res?.loc || !q) return;
+    const lbm = res.data?.clippedgridscore24 || res.data?.buurtscore24;
+    const item = {
+      name: res.loc.weergavenaam, place: [res.loc.buurtnaam, res.loc.gemeentenaam].filter(Boolean).join(' · '),
+      q, price: H.price || null, type: H.type || '', lbm: lbm?.kscore || null,
+      woz: res.woz?.values?.at(-1)?.value || null, t: Date.now(),
+    };
+    H.current = item;
+    H.saveRecent([item, ...H.recent().filter((r) => r.name !== item.name)]);
+    // keep a bookmark's figures fresh
+    const sv = H.saved();
+    if (sv.some((r) => r.name === item.name)) H.setSaved(sv.map((r) => (r.name === item.name ? { ...item, price: item.price || r.price } : r)));
+    window.dispatchEvent(new Event('hz-result'));
+  }
+  const session = area((k) => mem[k], (k, v) => { mem[k] = v; if (k.startsWith('r:')) remember(v); });
+
   window.chrome = {
-    storage: { session: area((k) => mem[k], (k, v) => { mem[k] = v; }), local: ls('hz.'), sync: ls('hz.sync.') },
+    storage: { session, local: ls('hz.'), sync: ls('hz.sync.') },
     // The web app lives in /app/ of the huisinzicht-data repo; data/nvm.json sits one level up.
     runtime: { getURL: (p) => new URL(`../${p}`, location.href).href },
     tabs: {

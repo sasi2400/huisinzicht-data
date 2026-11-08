@@ -1,4 +1,4 @@
-import { isListing, addressFromPageText } from './lib.js';
+import { isListing, addressFromPageText, SCORE_CLASSES } from './lib.js';
 
 // Find "Street 12a" (+ postcode / town) in free text such as the Funda app's share message.
 function addressInText(t) {
@@ -16,6 +16,9 @@ const form = document.getElementById('find');
 const input = form.elements.url;
 const esc = (s) => String(s ?? '').replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
 
+const seen = [...H.saved(), ...H.recent()].find((r) => r.q === (H.link || H.typed));
+if (seen && !H.price && seen.price) H.price = seen.price;
+if (seen && !H.type && seen.type) H.type = seen.type;
 input.value = H.link || H.typed;
 if (H.price) form.elements.price.value = H.price.toLocaleString('nl-NL');
 form.elements.type.value = H.type;
@@ -67,7 +70,24 @@ if (H.link && isListing(H.link)) {
   input.placeholder = 'e.g. Stinzenlaan Zuid 210 Breukelen';
   if (!chromeUrl) input.focus();
 } else {
-  app.innerHTML = `
+  const recent = H.recent();
+  const href = (r) => `?${new URLSearchParams({ url: r.q, ...(r.price ? { price: r.price } : {}), ...(r.type ? { type: r.type } : {}) })}`;
+  const when = (t) => { const d = Math.round((Date.now() - t) / 864e5); return d < 1 ? 'today' : d === 1 ? 'yesterday' : `${d} days ago`; };
+  const saved = H.saved();
+  const savedNames = new Set(saved.map((r) => r.name));
+  const listHtml = (items) => `<ul class="recent">${items.map((r) => {
+      const c = SCORE_CLASSES[r.lbm];
+      return `<li><a href="${esc(href(r))}">
+        <span class="rbadge" style="background:${c ? c.color : 'var(--line)'};color:${r.lbm >= 7 || r.lbm <= 2 ? '#fff' : '#1d2420'}">${r.lbm || '–'}</span>
+        <span class="rtext"><b>${esc(r.name)}</b><span class="small muted">${esc(r.place)}${r.price ? ` · € ${Math.round(r.price).toLocaleString('nl-NL')}` : ''} · ${when(r.t)}</span></span>
+      </a></li>`;
+    }).join('')}</ul>`;
+  const others = recent.filter((r) => !savedNames.has(r.name));
+  const any = saved.length || others.length;
+  app.innerHTML = (saved.length ? `<h2>★ Saved</h2>${listHtml(saved)}` : '')
+    + (others.length ? `<h2>Recently viewed <button type="button" id="clear-recent" class="linkbtn">Clear</button></h2>${listHtml(others)}` : '')
+    + `
+    ${any ? '<details><summary>How to use</summary>' : ''}
     <h2>How to use</h2>
     <p>Paste a Funda, Pararius or Jaap link, or type an address, then press <b>Check</b>.
       The asking price is optional; with it you also get the overbid estimate.</p>
@@ -96,7 +116,29 @@ if (H.link && isListing(H.link)) {
       <li class="small muted">If the Funda app's share holds no address, share from funda.nl in Chrome instead: those links include the street.</li>
     </ol>`}
     <p class="small muted">All data comes straight from public sources (Leefbaarometer, Kadaster WOZ, BAG, CBS, RIVM,
-      Klimaateffectatlas, NVM). Nothing is stored or sent anywhere else.</p>`;
+      Klimaateffectatlas, NVM). Recently viewed houses stay on this phone only.</p>
+    ${any ? '</details>' : ''}`;
+  // "Clear" empties the recent list only; saved houses stay.
+  document.getElementById('clear-recent')?.addEventListener('click', () => { H.saveRecent([]); location.reload(); });
 }
+
+// ☆ Save / ★ Saved button next to the address on a result page.
+function addStar() {
+  const h1 = app.querySelector('header h1');
+  if (!h1 || !H.current || document.getElementById('star')) return;
+  const btn = document.createElement('button');
+  btn.id = 'star'; btn.type = 'button';
+  const isSaved = () => H.saved().some((r) => r.name === H.current.name);
+  const paint = () => { btn.textContent = isSaved() ? '★ Saved' : '☆ Save'; btn.classList.toggle('on', isSaved()); };
+  btn.onclick = () => {
+    const rest = H.saved().filter((r) => r.name !== H.current.name);
+    H.setSaved(isSaved() ? rest : [{ ...H.current, price: H.price || H.current.price }, ...rest]);
+    paint();
+  };
+  paint();
+  h1.before(btn);
+}
+window.addEventListener('hz-result', () => setTimeout(addStar));
+new MutationObserver(addStar).observe(app, { childList: true });
 
 if ('serviceWorker' in navigator) navigator.serviceWorker.register('sw.js').catch(() => {});
